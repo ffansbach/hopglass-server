@@ -72,7 +72,7 @@ module.exports = function(receiver, config) {
     var nodes = []
 
     async.forEachOf(data, function(n, k, finished) {
-      nodes.push(_.get(n, 'nodeinfo.hostname')+";"+_.get(n, 'nodeinfo.nodeid'))
+      nodes.push(_.get(n, 'nodeinfo.hostname')+";"+_.get(n, 'nodeinfo.node_id'))
       finished()
     }, function() {
       for (var i in nodes)
