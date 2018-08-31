@@ -45,8 +45,29 @@ module.exports = function(receiver, config) {
     })
   }
 
+  // get all contact data for nodes without location set
+  function getNoLocationContacts(stream, query) {
+    stream.writeHead(200, { 'Content-Type': 'text/plain' })
+    var data = receiver.getData(query)
+    var contacts = []
+
+    async.forEachOf(data, function(n, k, finished) {
+      if (!_.has(n, 'nodeinfo.location')) {
+        if (_.has(n, 'nodeinfo.owner'))
+          contacts.push(_.get(n, 'nodeinfo.owner.contact', 'unknown'))
+      }
+      finished()
+    }, function() {
+      var list = uniq(contacts)
+      for (var i in list)
+        stream.write(list[i] + '\n')
+      stream.end()
+    })
+  } 
+
   return {
     /* eslint-disable quotes */
-    "contacts": getContacts
+    "contacts": getContacts,
+    "noloc-contacts": getNoLocationContacts
   }
 }
