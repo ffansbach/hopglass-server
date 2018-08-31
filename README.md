@@ -35,7 +35,7 @@ Possible webserver queries
 |/nodes.zone            |Named DNS zone file|
 |/contacts              |All unique contact entries|
 |/noloc-contacts        |All unique contacts of nodes w/o location|
-|/nodes                 |List all nodes (hostname, nodeid)|
+|/nodes                 |List all nodes (hostname;nodeid)|
 
 ## Metrics values
 
