@@ -63,11 +63,28 @@ module.exports = function(receiver, config) {
         stream.write(list[i] + '\n')
       stream.end()
     })
-  } 
+  }
+
+  // get all node names for a certain contact address
+  function getNodes(stream, query) {
+    stream.writeHead(200, { 'Content-Type': 'text/plain' })
+    var data = receiver.getData(query)
+    var nodes = []
+
+    async.forEachOf(data, function(n, k, finished) {
+      nodes.push(_.get(n, 'nodeinfo.hostname')
+      finished()
+    }, function() {
+      for (var i in nodes)
+        stream.write(nodes[i] + '\n')
+      stream.end()
+    })
+  }
 
   return {
     /* eslint-disable quotes */
     "contacts": getContacts,
-    "noloc-contacts": getNoLocationContacts
+    "noloc-contacts": getNoLocationContacts,
+    "nodes": getNodes
   }
 }

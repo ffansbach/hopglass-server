@@ -184,6 +184,10 @@ module.exports = function (observer, configData) {
       return _.pickBy(data, function(o) {
         return _.includes(_.split(query.value, ','), _.get(o, 'nodeinfo.node_id', 'unknown'))
       })
+    case 'contact':
+      return _.pickBy(data, function(o) {
+        return _.includes(_.split(query.value, ','), _.get(o, 'nodeinfo.owner.contact', 'unknown'))
+      })
     default:
       return data
     }
