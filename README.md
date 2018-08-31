@@ -54,6 +54,22 @@ Possible webserver queries
 - total_clients
 - total_traffic
 
+## Filter / queries
+
+### Syntax
+- [query_location]?filter=[filterName]&value=[filterValue]
+
+### Filternames
+
+- site
+- firmware_release
+- firstseen
+- lastseen
+- uptime
+- clients
+- nodeid
+- contact
+
 ## Development timeline
 
 **oldmaster (outdated)**
