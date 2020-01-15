@@ -1,21 +1,82 @@
 # HopGlass Server
 The HopGlass Server collects data from Freifunk networks and processes it to be used in [HopGlass](https://github.com/hopglass/hopglass), for statistics and other purposes.
 
-**Warning: The HopGlass Server is subject to major changes. Updates may require manual intervention.**
-
 ## How to use
 
-**ArchLinux or Debian-based systems using systemd (preferred)**
+### Installation
 
-**i.e. Debian Jessie or newer, Ubuntu 15.04 or newer**
+1. Install a recent version of NodeJS. It is recommended to use your distribution's package manager: https://nodejs.org/en/download/package-manager/
 
-1. Run `# wget https://raw.githubusercontent.com/hopglass/hopglass-server/v0.1.3/scripts/bootstrap.sh; bash bootstrap.sh; rm bootstrap.sh`
-2. Review and edit the default configuration located at `/etc/hopglass-server/default/config.json`.
-3. Start the HopGlass Server: `# systemctl start hopglass-server@default`
-4. (Optional) Automatically start the HopGlass Server at boot: `# systemctl enable hopglass-server@default`
+2. Clone the hopglass-server repository to `/opt/hopglass/server`
 
-Possible webserver queries
---------------------------
+       mkdir -p /opt/hopglass
+       git clone https://github.com/hopglass/hopglass-server /opt/hopglass/server
+
+3. Install NPM dependencies with either `yarn` or `npm`
+
+       cd /opt/hopglass/server
+       yarn install
+       # OR
+       npm install
+
+4. Copy the systemd service file to `/etc/systemd/system`, or create an init-script if your distribution does not support systemd.
+
+       cp /opt/hopglass/server/hopglass-server@.service /etc/systemd/system/
+       systemctl daemon-reload
+
+5. Start the HopGlass Server: `# systemctl start hopglass-server@default`
+
+       systemctl start hopglass-server@default
+
+6. (Optional) Automatically start the HopGlass Server at boot:
+
+       systemctl enable hopglass-server@default
+
+### After installation
+
+Optionally create a configuration file in `/etc/hopglass-server/default/config.json`, and an aliases file in `/var/lib/hopglass-server/default/aliases.json`.
+Ensure, that the ports, you configured are open in your firewall (default port 1001 UDP and 45123 UDP).
+
+
+You might want to
+- Install a webserver (search for Nginx or Apache) and configure a reverse proxy and gzip-compression
+- Install [HopGlass](https://github.com/hopglass/hopglass)
+- Install [Prometheus](http://prometheus.io/) and [Grafana](http://grafana.org/)
+
+### Update
+
+**Warning: The HopGlass Server is subject to major changes. Updates may require manual intervention.**
+
+For a start, you can try this:
+
+1. pull
+
+       cd /opt/hopglass/server
+       git pull
+
+1. Copy the new systemd service file to `/etc/systemd/system` or `/lib/systemd/system/` and reload with:
+
+       cp /opt/hopglass/server/hopglass-server@.service /etc/systemd/system/
+       systemctl daemon-reload
+
+1. check for possible needed changes in the `config.json`
+
+       diff config.json config.json.example
+
+1. rebuild the server:
+
+       cd /opt/hopglass/server
+       yarn install
+       #OR
+       npm install
+
+1. restart the service
+
+       systemctl restart hopglass-server@default
+
+Note: The default paths for configuration and state files might have changed. Make sure your config.json, raw.json and aliases.json are located in `/etc/hopglass-server/default/config.json`, `/var/lib/hopglass-server/default/aliases.json` and `/var/lib/hopglass-server/default/raw.json` respectively.
+
+## Possible webserver queries
 
 |Query Location         |Description|
 |---------------------- |---|
@@ -39,7 +100,7 @@ Possible webserver queries
 
 ## Metrics values
 
-### per node (all with the labels `hostname`, `nodeid` and `gateway`):
+### per node (all with the labels `hostname`, and `nodeid`):
 
 - statistics.clients.total
 - statistics.uptime
@@ -58,6 +119,7 @@ Possible webserver queries
 
 ### Syntax
 - [query_location]?filter=[filterName]&value=[filterValue]
+  useful example: [nodes|nodelist].json?filter=[filterName]&value=[filterValue]
 
 ### Filternames
 
@@ -95,48 +157,28 @@ Possible webserver queries
 - new provider: dns zone output (eberhab)
 - probably more I forgot
 
-**v0.1.3 (current)**
+**v0.1.3 (outdated)**
 
 - fix the install script
 
-**v0.2 (next)**
+**v1.0.0 (current)**
+
+- various bugfixes (many contributors)
+- remove obsolete installation scripts
+- rewrite systemd service file to use DynamicUser and StateDirectory options
+- new provider: meshviewers nodes.json v1 (rotanid)
+- allow hjson for aliases and config
+- receiver/announced: offset queries for different data typesnodeinfo/statistics
+- receiver/announced: Ensure multicast interface is set (tobleminer)
+- add Nix derivation and flake
+- Recommended NodeJS version: 12+
+- provider/prometheus: only add gateway label to online metric
+
+**v2.0.0 (next)**
 
 - provide a graph-generation implementation for all providers
 - graph caching
 - handle gateway flag correctly without aliases
 - alfred receiver
-
-**v0.3**
-
 - new HopGlass data format
 - network-transparent receivers
-
-**v1.0**
-
-- definition of the Prometheus metrics format
-- definition of the transitional data format
-- definition of the configuration format
-
-## Installation without systemd
-
-**Debian-based systems without systemd**
-
-i.e. Debian Wheezy or older, Ubuntu 14.10 or older
-
-***Warning: untested, unsupported, not recommended***
-
-1. Run `# wget https://raw.githubusercontent.com/hopglass/hopglass-server/v0.1.3/scripts/bootstrap.sh; bash bootstrap.sh; rm bootstrap.sh`
-2. `INSTALL_DIR="/opt/hopglass/"; cp "$INSTALL_DIR"/server/config.json.example /etc/hopglass-server/default/config.json;
-    chown -R hopglass:hopglass /etc/hopglass-server`
-3. `cp server/aliases.json.example server/aliases.json`
-4. `echo "{}">server/raw.json`
-5. Create a start script in `/usr/local/bin/` similar to this:
-   `su - hopglass --shell /bin/bash -c "cd server; node hopglass-server.js --config /etc/hopglass-server/default/config.json"`
-6. Create an init-script in `/etc/init.d/`.
-
-## After installation
-
-You might want to
-- Install a webserver (search for Nginx or Apache) and configure a reverse proxy and gzip-compression
-- Install [HopGlass](https://github.com/hopglass/hopglass)
-- Install [Prometheus](http://prometheus.io/) and [Grafana](http://grafana.org/)

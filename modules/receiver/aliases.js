@@ -1,5 +1,5 @@
-/*  Copyright (C) 2016 Milan Pässler
-    Copyright (C) 2016 HopGlass Server contributors
+/*  Copyright (C) 2019 Milan Pässler
+    Copyright (C) 2019 HopGlass Server contributors
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published
@@ -22,9 +22,7 @@ var hjson = require('hjson')
 
 var config = {
   /* eslint-disable quotes */
-  "aliases": {
-    "file": "./aliases.json"
-  }
+  "file": "./aliases.json"
 }
 
 delete require.cache[__filename]
@@ -35,9 +33,9 @@ module.exports = function(receiverId, configData, api) {
   var aliases = {}
 
   try {
-    aliases = hjson.parse(fs.readFileSync(config.aliases.file, 'utf8'))
+    aliases = hjson.parse(fs.readFileSync(config.file, 'utf8'))
   } catch (err) {
-    console.warn('alias file "' + config.aliases.file + '" doesn\'t exist, using empty')
+    console.warn('alias file "' + config.file + '" doesn\'t exist, using empty')
   }
 
   _.forEach(aliases, function(n, k) {

@@ -1,5 +1,5 @@
-/*  Copyright (C) 2016 Milan Pässler
-    Copyright (C) 2016 HopGlass Server contributors
+/*  Copyright (C) 2019 Milan Pässler
+    Copyright (C) 2019 HopGlass Server contributors
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published
@@ -69,8 +69,8 @@ module.exports = function (observer, configData) {
     try {
       receiverList.push(require(__dirname + '/receiver/' + r.module)(i, r.config, api))
     } catch(err) {
-      console.err('Error while initializing receiver "' + r.module + '": ', err)
-      console.err('Exiting...')
+      console.error('Error while initializing receiver "' + r.module + '": ', err)
+      console.error('Exiting...')
       process.exit(1)
     }
   }

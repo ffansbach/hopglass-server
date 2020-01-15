@@ -1,5 +1,5 @@
-/*  Copyright (C) 2016 Milan Pässler
-    Copyright (C) 2016 HopGlass Server contributors
+/*  Copyright (C) 2019 Milan Pässler
+    Copyright (C) 2019 HopGlass Server contributors
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published
@@ -116,8 +116,12 @@ module.exports = function(receiver, config) {
       if (_.has(n, 'nodeinfo.software.firmware.release'))
         labels['firmware'] = _.get(n, 'nodeinfo.software.firmware.release')
 
+      if (_.has(n, 'nodeinfo.hardware.model'))
+        labels['model'] = _.get(n, 'nodeinfo.hardware.model')
+
       save(n, stream, labels, null, 'online', isOnline(n) ? 1 : 0)
 
+      delete labels['gateway']
       delete labels['firmware']
 
       if (isOnline(n)) {

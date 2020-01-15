@@ -1,5 +1,5 @@
-/*  Copyright (C) 2016 Milan Pässler
-    Copyright (C) 2016 HopGlass Server contributors
+/*  Copyright (C) 2019 Milan Pässler
+    Copyright (C) 2019 HopGlass Server contributors
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published
@@ -23,13 +23,16 @@ var _ = require('lodash')
 var config = {
   /* eslint-disable quotes */
   "target": {
-    "ip": "ff02::1",
+    "ip": "ff02::2:1001",
     "port": 1001
   },
   "port": 45123,
-  "interval": {
-    "statistics": 60,
-    "nodeinfo": 500
+  "timings": {
+    "base": 300,
+    "multipliers": {
+      "statistics": 10,
+      "neighbours": 10
+    }
   }
 }
 
@@ -43,11 +46,6 @@ module.exports = function(receiverId, configData, api) {
   //collector callbacks
   collector.on('error', function(err) {
     throw(err)
-  })
-
-  collector.on('listening', function() {
-    collector.setTTL(1) // restrict hop-limit to own subnet / should prevent loops (default was: 64)
-    console.log('collector listening on port ' + config.port)
   })
 
   collector.on('message', function(msg) {
@@ -76,26 +74,38 @@ module.exports = function(receiverId, configData, api) {
 
   function retrieve(stat, address) {
     var ip = address ? address : config.target.ip
-    var req = new Buffer('GET ' + stat)
+    var req = Buffer.from('GET ' + stat)
     api.sharedConfig.ifaces.forEach(function(iface) {
+      collector.setMulticastInterface(ip + '%' + iface)
       collector.send(req, 0, req.length, config.target.port, ip + '%' + iface, function (err) {
         if (err) console.error(err)
       })
     })
   }
 
-  collector.bind(config.port)
+  collector.on('listening', function() {
+    collector.setTTL(1) // restrict hop-limit to own subnet / should prevent loops (default was: 64)
+    console.log('collector listening on port ' + config.port)
+    retrieve('nodeinfo')
+  })
 
-  retrieve('nodeinfo')
-  retrieve('neighbours')
-  retrieve('statistics')
+  collector.bind(config.port)
 
   setInterval(function() {
     retrieve('nodeinfo')
-  }, config.interval.nodeinfo * 1000)
+  }, config.timings.base * 1000)
 
-  setInterval(function() {
-    retrieve('neighbours')
+  setTimeout(function() {
     retrieve('statistics')
-  }, config.interval.statistics * 1000)
+    setInterval(function() {
+      retrieve('statistics')
+    }, config.timings.base / config.timings.multipliers.statistics * 1000)
+  }, (config.timings.base / config.timings.multipliers.statistics / 3) * 1000)
+
+  setTimeout(function() {
+    retrieve('neighbours')
+    setInterval(function() {
+      retrieve('neighbours')
+    }, config.timings.base / config.timings.multipliers.neighbours * 1000)
+  }, ((config.timings.base / config.timings.multipliers.statistics / 3) + (config.timings.base / config.timings.multipliers.neighbours / 3)) * 1000)
 }

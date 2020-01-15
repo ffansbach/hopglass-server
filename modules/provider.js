@@ -1,5 +1,5 @@
-/*  Copyright (C) 2016 Milan Pässler
-    Copyright (C) 2016 HopGlass Server contributors
+/*  Copyright (C) 2019 Milan Pässler
+    Copyright (C) 2019 HopGlass Server contributors
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published
@@ -36,8 +36,8 @@ module.exports = function (receiver, configData) {
       try {
         _.merge(exports, require(__dirname + '/provider/' + e)(receiver, config))
       } catch(err) {
-        console.err('Error while initializing provider "' + e + '": ', err)
-        console.err('Exiting...')
+        console.error('Error while initializing provider "' + e + '": ', err)
+        console.error('Exiting...')
         process.exit(1)
       }
     }
